@@ -23,6 +23,7 @@ namespace ConsoleApp26
         static void Main(string[] args)
         {
             Console.WriteLine("Загрузка");
+            Thread.Sleep(150);
             var t = new Thread(InputSystem)
             {
                 IsBackground = true,
@@ -30,6 +31,7 @@ namespace ConsoleApp26
             };
             t.Start();
             Console.OutputEncoding = Encoding.UTF8;
+            Console.SetBufferSize(120, 300);
             Console.CursorVisible = false;
             Console.BackgroundColor = ConsoleColor.Black;
             GameObgectMemory MapObject = new GameObgectMemory(ScaleMapX, ScaleMapY);
@@ -45,8 +47,7 @@ namespace ConsoleApp26
                 Thread.Sleep(150); //300 //150
             }
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Clear();
-            Console.SetCursorPosition(ScaleMapX / 2, ScaleMapY / 2);
+            Console.SetCursorPosition(ScaleMapX*2 +5, ScaleMapY/4);// Самая магическая часть программы
             Console.WriteLine("Игра окончена");
             Thread.Sleep(2000);
             Console.SetCursorPosition(0, ScaleMapX);
@@ -178,7 +179,7 @@ namespace ConsoleApp26
             }
             else
             {
-                Console.WriteLine("Ошибка Везде Null VectorSimple CheckingStatus");
+                Console.WriteLine("Ошибка,  Везде Null VectorSimple CheckingStatus");
                 return 0;
             }
         }
@@ -307,6 +308,7 @@ namespace ConsoleApp26
                     break;
 
             }
+            //for(int i = _player.Ta)
             СhangeGameObject(coordinates, _player.Coordinates);
         }
         private void СhangeGameObject(Coordinates Chang1, Coordinates Chang2)
@@ -382,8 +384,7 @@ namespace ConsoleApp26
     }
     class Player : GameObject
     {
-
-        //private List<Tail> Tails = new List<Tail>();
+        private Queue<Tail> Tails = new Queue<Tail>();
         public VectorSimple Direction;
         public Coordinates Coordinates;
         public Player(int x, int y)
@@ -410,17 +411,21 @@ namespace ConsoleApp26
                 case 3:
                     _sprite = '˃';
                     break;
-
             }
         }
-
+        public void AddTail(Coordinates coordinates)
+        {
+            Tails.Enqueue(new Tail(coordinates));
+        }
 
     }
     class Tail : GameObject
     {
-        private Tail()
+        public Coordinates position = new Coordinates(); 
+        public Tail(Coordinates coordinates)
         {
             _sprite = 'O';
+            position = coordinates;
         }
     }
 
