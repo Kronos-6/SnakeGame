@@ -220,7 +220,7 @@ namespace ConsoleApp26
     }
     class GameObgectMemory
     {
-        public GameObject[,] matrix { get; private set; }
+        private GameObject[,] matrix;
         public Coordinates _Scale { get; private set; }
         public Renderer _renderer { get; private set; }
         private Player _player;
@@ -228,7 +228,7 @@ namespace ConsoleApp26
         {
             matrix = new GameObject[x, y];
             _Scale = new Coordinates(x, y);
-            _renderer = new Renderer(this);
+            _renderer = new Renderer(this, _Scale, matrix);
             CreatingAScene();
         }
         private void CreatingAScene()
@@ -321,14 +321,16 @@ namespace ConsoleApp26
     }
     class Renderer
     {
-        private readonly GameObgectMemory RenderMap;
+        private readonly GameObject[,] _matrix;
+        private readonly Coordinates CasheScale;
         private readonly ConsoleColor[] consoleColors = { ConsoleColor.Magenta, ConsoleColor.Blue, ConsoleColor.Cyan, ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.Red, ConsoleColor.White };
         private int indexColor = 0;
         private char[,] simbolMatrix;
-        public Renderer(GameObgectMemory matrix)
+        public Renderer(GameObgectMemory matrix, Coordinates casheScale, GameObject[,] Matrix)
         {
-            RenderMap = matrix;
-            simbolMatrix = new char[RenderMap._Scale.X, RenderMap._Scale.Y];
+            _matrix = Matrix;
+            CasheScale = casheScale;
+            simbolMatrix = new char[CasheScale.X, CasheScale.Y];
         }
 
         public void Displaying()
@@ -339,11 +341,11 @@ namespace ConsoleApp26
                 indexColor = 0;
             else
                 indexColor++;
-            for (int i = 0; i < RenderMap.matrix.GetLength(0); i++)
+            for (int i = 0; i < _matrix.GetLength(0); i++)
             {
-                for (int j = 0; j < RenderMap.matrix.GetLength(1); j++)
+                for (int j = 0; j < _matrix.GetLength(1); j++)
                 {
-                    simbolMatrix[i, j] = RenderMap.matrix[i, j]._sprite;
+                    simbolMatrix[i, j] = _matrix[i, j]._sprite;
                 }
             }
             var Window = new StringBuilder(25 * 25);
@@ -357,9 +359,6 @@ namespace ConsoleApp26
             }
             Console.SetCursorPosition(0, 0);
             Console.WriteLine(Window.ToString());
-
-
-
 
         }
 
