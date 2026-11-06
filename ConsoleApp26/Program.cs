@@ -228,6 +228,7 @@ namespace ConsoleApp26
         private Player _player;
         static public int _time { get; private set; }
         private Random rnd = new Random();
+        private bool _eateApple = false;
         public GameObgectMemory(int x, int y)
         {
             matrix = new GameObject[x, y];
@@ -294,6 +295,7 @@ namespace ConsoleApp26
             else if(matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Apple)
             {
                 IsApple(coordinatesPlayer);
+                _eateApple = true;
                 return false;
             }
             else
@@ -307,7 +309,6 @@ namespace ConsoleApp26
         }
         public void MovePlayer()
         {
-
             Coordinates coordinates = new Coordinates();
             coordinates = _player.Coordinates;
             int direct = _player.Direction.CheckingStatus();
@@ -326,13 +327,14 @@ namespace ConsoleApp26
                     _player.Coordinates.Y++;
                     break;
             }
-            //for(int i = _player.Ta)
             СhangeGameObject(coordinates, _player.Coordinates);
-            ChaingeTail(coordinates);
+            if(_player.LenghTail() > 0)
+                ChaingeTail(coordinates);
+
         }
         private void СhangeGameObject(Coordinates Chang1, Coordinates Chang2)
         {
-
+             
             GameObject memory = new GameObject();
             memory = matrix[Chang1.X, Chang1.Y];
             matrix[Chang1.X, Chang1.Y] = matrix[Chang2.X, Chang2.Y];
@@ -340,8 +342,15 @@ namespace ConsoleApp26
         }
         public void ChaingeTail(Coordinates coordinateFlor)
         {
-            Coordinates TailXY = new Coordinates();
-            TailXY = _player.LastTail();
+            if(_eateApple == true)
+                _eateApple = false;
+            else
+            {
+                Coordinates TailXY = new Coordinates();
+                TailXY = _player.LastTail();
+                _player.MovePatr(coordinateFlor);
+                СhangeGameObject(coordinateFlor, TailXY);
+            }
 
         }
         public void MakeApple()
