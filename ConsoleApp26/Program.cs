@@ -37,6 +37,8 @@ namespace ConsoleApp26
             GameObgectMemory MapObject = new GameObgectMemory(ScaleMapX, ScaleMapY);
             while (true)
             {
+                MapObject.TmimeUp();
+                MapObject.MakeApple();
                 MapObject.TurnPlayer(InputInt);
                 if (MapObject.ISWall() == true)
                 {
@@ -224,12 +226,15 @@ namespace ConsoleApp26
         public Coordinates _Scale { get; private set; }
         public Renderer _renderer { get; private set; }
         private Player _player;
+        static public int _time { get; private set; }
+        private Random rnd = new Random();
         public GameObgectMemory(int x, int y)
         {
             matrix = new GameObject[x, y];
             _Scale = new Coordinates(x, y);
             _renderer = new Renderer(this, _Scale, matrix);
             CreatingAScene();
+            _time = 0;
         }
         private void CreatingAScene()
         {
@@ -243,7 +248,7 @@ namespace ConsoleApp26
                     }
                     else
                     {
-                        matrix[i, j] = new GameObject();
+                        matrix[i, j] = new Floor();
                     }
                 }
             }
@@ -282,9 +287,23 @@ namespace ConsoleApp26
                 else
                     return false;
             }
+            else if(matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Tail)
+            {
+                return true;
+            }
+            else if(matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Apple)
+            {
+                IsApple(coordinatesPlayer);
+                return false;
+            }
             else
                 return false;
 
+
+        }
+        private void IsApple(Coordinates coordinates)
+        {
+            matrix[coordinates.X, coordinates.Y] = _player.AddTail(coordinates);
         }
         public void MovePlayer()
         {
@@ -306,17 +325,46 @@ namespace ConsoleApp26
                 case 3:
                     _player.Coordinates.Y++;
                     break;
-
             }
             //for(int i = _player.Ta)
             СhangeGameObject(coordinates, _player.Coordinates);
+            ChaingeTail(coordinates);
         }
         private void СhangeGameObject(Coordinates Chang1, Coordinates Chang2)
         {
+
             GameObject memory = new GameObject();
             memory = matrix[Chang1.X, Chang1.Y];
             matrix[Chang1.X, Chang1.Y] = matrix[Chang2.X, Chang2.Y];
             matrix[Chang2.X, Chang2.Y] = memory;
+        }
+        public void ChaingeTail(Coordinates coordinateFlor)
+        {
+            Coordinates TailXY = new Coordinates();
+            TailXY = _player.LastTail();
+
+        }
+        public void MakeApple()
+        {
+            if(_time%25 == 0)
+            {
+                bool flag0 = true;
+                while(flag0)
+                {
+                    int a = rnd.Next(1, _Scale.X - 1);
+                    int b = rnd.Next(1, _Scale.Y - 1);
+                    if (matrix[a,b] is Floor)
+                    {
+                        matrix[a, b] = new Apple();
+                        flag0 = false;
+                    }
+                }
+                
+            }
+        }
+        public void TmimeUp()
+        {
+            _time++;
         }
     }
     class Renderer
@@ -336,11 +384,15 @@ namespace ConsoleApp26
         public void Displaying()
         {
 
-            Console.ForegroundColor = consoleColors[indexColor];
-            if (indexColor + 1 >= consoleColors.Length)
-                indexColor = 0;
-            else
-                indexColor++;
+            if(GameObgectMemory._time%8 == 0)
+            {
+                Console.ForegroundColor = consoleColors[indexColor];
+                if (indexColor + 1 >= consoleColors.Length)
+                    indexColor = 0;
+                else
+                    indexColor++;
+            }
+            
             for (int i = 0; i < _matrix.GetLength(0); i++)
             {
                 for (int j = 0; j < _matrix.GetLength(1); j++)
@@ -381,6 +433,13 @@ namespace ConsoleApp26
             _isCollision = true;
         }
     }
+    class Floor : GameObject
+    {
+        public Floor()
+        {
+            _sprite = ' ';
+        }
+    }
     class Player : GameObject
     {
         private Queue<Tail> Tails = new Queue<Tail>();
@@ -412,9 +471,25 @@ namespace ConsoleApp26
                     break;
             }
         }
-        public void AddTail(Coordinates coordinates)
+        public Tail AddTail(Coordinates coordinates)
         {
             Tails.Enqueue(new Tail(coordinates));
+            return Tails.Peek();
+        }
+        public int LenghTail()
+        {
+            return Tails.Count;
+        }
+        public Coordinates LastTail()
+        {
+            Tail mem = Tails.Peek();
+            return mem.position;
+        }
+        public void MovePatr(Coordinates coordinates)
+        {
+            Tail mem = Tails.Dequeue();
+            mem.position = coordinates;
+            Tails.Enqueue(mem);
         }
 
     }
@@ -427,5 +502,11 @@ namespace ConsoleApp26
             position = coordinates;
         }
     }
-
+    class Apple  : GameObject
+    {
+        public Apple()
+        {
+            _sprite = '$';
+        }
+    }
 }
