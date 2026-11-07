@@ -22,6 +22,7 @@ namespace ConsoleApp26
 
         static void Main(string[] args)
         {
+            
             Console.WriteLine("Загрузка");
             Thread.Sleep(150);
             var t = new Thread(InputSystem)
@@ -42,6 +43,7 @@ namespace ConsoleApp26
                 MapObject.TurnPlayer(InputInt);
                 if (MapObject.ISWall() == true)
                 {
+                    MapObject._renderer.Displaying();
                     break;
                 }
                 MapObject.MovePlayer();
@@ -263,22 +265,26 @@ namespace ConsoleApp26
         }
         public bool ISWall()
         {
-            Coordinates coordinatesPlayer = new Coordinates();
-            coordinatesPlayer = _player.Coordinates;
+            Coordinates coordinatesPlayer = _player.Coordinates;
+            Coordinates SpeshelToTail = _player.Coordinates;
             int direct = _player.Direction.CheckingStatus();
             switch (direct)
             {
                 case 0:
                     coordinatesPlayer.X--;
+                    SpeshelToTail.X++;
                     break;
                 case 1:
                     coordinatesPlayer.X++;
+                    SpeshelToTail.X--;
                     break;
                 case 2:
                     coordinatesPlayer.Y--;
+                    SpeshelToTail.Y++;
                     break;
                 case 3:
                     coordinatesPlayer.Y++;
+                    SpeshelToTail.Y--;
                     break;
             }
             if (matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Woall w)
@@ -294,7 +300,8 @@ namespace ConsoleApp26
             }
             else if(matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Apple)
             {
-                IsApple(coordinatesPlayer);
+
+                IsApple(coordinatesPlayer,SpeshelToTail);
                 _eateApple = true;
                 return false;
             }
@@ -303,9 +310,9 @@ namespace ConsoleApp26
 
 
         }
-        private void IsApple(Coordinates coordinates)
+        private void IsApple(Coordinates coordinates , Coordinates SpeshelToAplle)
         {
-            matrix[coordinates.X, coordinates.Y] = _player.AddTail(coordinates);
+            matrix[coordinates.X, coordinates.Y] = _player.AddTail(SpeshelToAplle);
         }
         public void MovePlayer()
         {
@@ -328,15 +335,14 @@ namespace ConsoleApp26
                     break;
             }
             СhangeGameObject(coordinates, _player.Coordinates);
-            if(_player.LenghTail() > 0)
+            if (_player.LenghTail() > 0)
                 ChaingeTail(coordinates);
 
         }
         private void СhangeGameObject(Coordinates Chang1, Coordinates Chang2)
         {
              
-            GameObject memory = new GameObject();
-            memory = matrix[Chang1.X, Chang1.Y];
+            GameObject memory = matrix[Chang1.X, Chang1.Y];
             matrix[Chang1.X, Chang1.Y] = matrix[Chang2.X, Chang2.Y];
             matrix[Chang2.X, Chang2.Y] = memory;
         }
@@ -482,8 +488,9 @@ namespace ConsoleApp26
         }
         public Tail AddTail(Coordinates coordinates)
         {
-            Tails.Enqueue(new Tail(coordinates));
-            return Tails.Peek();
+            Tail tail = new Tail(coordinates);
+            Tails.Enqueue(tail);
+            return tail;  //Поменя с Tails.Peak
         }
         public int LenghTail()
         {
