@@ -36,6 +36,7 @@ namespace ConsoleApp26
             Console.CursorVisible = false;
             Console.BackgroundColor = ConsoleColor.Black;
             GameObgectMemory MapObject = new GameObgectMemory(ScaleMapX, ScaleMapY);
+            MapObject._renderer.Displaying(MapObject._time);
             while (true)
             {
                 MapObject.TmimeUp();
@@ -43,12 +44,12 @@ namespace ConsoleApp26
                 MapObject.TurnPlayer(InputInt);
                 if (MapObject.ISWall() == true)
                 {
-                    MapObject._renderer.Displaying();
+                    MapObject._renderer.Displaying(MapObject._time);
                     break;
                 }
                 MapObject.MovePlayer();
-                MapObject._renderer.Displaying();
-                Thread.Sleep(150); //300 //150
+                MapObject._renderer.Displaying(MapObject._time);
+                Thread.Sleep(250); //300 //150
             }
             Console.ForegroundColor = ConsoleColor.White;
             Console.SetCursorPosition(ScaleMapX*2 +5, ScaleMapY/4);// Самая магическая часть программы
@@ -75,6 +76,21 @@ namespace ConsoleApp26
                         InputInt = 2;
                         break;
                     case ConsoleKey.D:
+                        InputInt = 3;
+                        break;
+                }
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        InputInt = 0;
+                        break;
+                    case ConsoleKey.DownArrow:
+                        InputInt = 1;
+                        break;
+                    case ConsoleKey.LeftArrow:
+                        InputInt = 2;
+                        break;
+                    case ConsoleKey.RightArrow:
                         InputInt = 3;
                         break;
                 }
@@ -228,9 +244,10 @@ namespace ConsoleApp26
         public Coordinates _Scale { get; private set; }
         public Renderer _renderer { get; private set; }
         private Player _player;
-        static public int _time { get; private set; }
+        public int _time { get; private set; }
+        private bool _ateApple = false;
         private Random rnd = new Random();
-        private bool _eateApple = false;
+        private static readonly Floor EmptyFloor = new Floor();
         public GameObgectMemory(int x, int y)
         {
             matrix = new GameObject[x, y];
@@ -263,30 +280,55 @@ namespace ConsoleApp26
             _player.Direction.ChangeMove(index);
             _player.HeadOrientation();
         }
-        public bool ISWall()
+        private Coordinates Coordinator(Coordinates player)
         {
-            Coordinates coordinatesPlayer = _player.Coordinates;
-            Coordinates SpeshelToTail = _player.Coordinates;
             int direct = _player.Direction.CheckingStatus();
             switch (direct)
             {
                 case 0:
-                    coordinatesPlayer.X--;
-                    SpeshelToTail.X++;
+                    player.X--;
                     break;
                 case 1:
-                    coordinatesPlayer.X++;
-                    SpeshelToTail.X--;
+                    player.X++;
                     break;
                 case 2:
-                    coordinatesPlayer.Y--;
-                    SpeshelToTail.Y++;
+                    player.Y--;
                     break;
                 case 3:
-                    coordinatesPlayer.Y++;
-                    SpeshelToTail.Y--;
+                    player.Y++;
                     break;
             }
+            return player;
+        }
+        private Coordinates CoordinatorMinos(Coordinates player)
+        {
+            int direct = _player.Direction.CheckingStatus();
+            switch (direct)
+            {
+                case 0:
+                    player.X++;
+                    break;
+                case 1:
+                    player.X--;
+                    break;
+                case 2:
+                    player.Y++;
+                    break;
+                case 3:
+                    player.Y--;
+                    break;
+            }
+            return player;
+        }
+        public bool ISWall()
+        {
+            if(_player.Tails.Count>0)
+            {
+                _player.Tails.Peek().IsLastTeil = true;
+            }
+            Coordinates coordinatesPlayer = _player.Coordinates;
+            coordinatesPlayer = Coordinator(coordinatesPlayer);
+
             if (matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Woall w)
             {
                 if (w._isCollision == true)
@@ -294,15 +336,16 @@ namespace ConsoleApp26
                 else
                     return false;
             }
-            else if(matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Tail)
+            else if(matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Tail q)
             {
-                return true;
+                if(q.IsLastTeil == true && _player.Tails.Count>1)
+                    return false;
+                else
+                    return true;
             }
-            else if(matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Apple)
+            else if (matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Apple)
             {
-
-                IsApple(coordinatesPlayer,SpeshelToTail);
-                _eateApple = true;
+                _ateApple = true;
                 return false;
             }
             else
@@ -310,59 +353,73 @@ namespace ConsoleApp26
 
 
         }
-        private void IsApple(Coordinates coordinates , Coordinates SpeshelToAplle)
+        private void MakeTail(Coordinates coordinates)
         {
-            matrix[coordinates.X, coordinates.Y] = _player.AddTail(SpeshelToAplle);
+            Tail tail = new Tail(coordinates);
+            matrix[coordinates.X, coordinates.Y] = tail;
+            _player.Tails.Enqueue(tail);
+
+
         }
         public void MovePlayer()
         {
-            Coordinates coordinates = new Coordinates();
-            coordinates = _player.Coordinates;
-            int direct = _player.Direction.CheckingStatus();
-            switch (direct)
+            Coordinates lastPlayer = _player.Coordinates;
+            _player.Coordinates = Coordinator(_player.Coordinates);
+            
+            if(_ateApple == false && _player.Tails.Count>0)
             {
-                case 0:
-                    _player.Coordinates.X--;
-                    break;
-                case 1:
-                    _player.Coordinates.X++;
-                    break;
-                case 2:
-                    _player.Coordinates.Y--;
-                    break;
-                case 3:
-                    _player.Coordinates.Y++;
-                    break;
+                
+                Tail memTail = _player.Tails.Dequeue();
+                Coordinates memCoordinaTeil = memTail.position;
+                matrix[memCoordinaTeil.X, memCoordinaTeil.Y] = EmptyFloor;   //Финальный костыль 
+                ChangeGameObject(lastPlayer, _player.Coordinates);
+                if (memCoordinaTeil.X != _player.Coordinates.X && memCoordinaTeil.Y != _player.Coordinates.Y)
+                {
+                    matrix[lastPlayer.X, lastPlayer.Y] = memTail;
+                    matrix[memCoordinaTeil.X, memCoordinaTeil.Y] = EmptyFloor;
+                }
+                else
+                    matrix[lastPlayer.X, lastPlayer.Y] = memTail;
+                memTail.position = lastPlayer;
+                memTail.IsLastTeil = false;
+                _player.Tails.Enqueue(memTail);
+                _player.Tails.Peek().IsLastTeil= true;
             }
-            СhangeGameObject(coordinates, _player.Coordinates);
-            if (_player.LenghTail() > 0)
-                ChaingeTail(coordinates);
+            else if(_ateApple == true)
+            {
+                ChangeGameObject(lastPlayer, _player.Coordinates);
+                MakeTail(lastPlayer);
+                _ateApple = false;
+            }
+            else /*(_player.Tails.Count == 0)*/
+            {
+                ChangeGameObject(lastPlayer, _player.Coordinates);
+            }
+
+            //Console.SetCursorPosition(_Scale.X * 2 + 5, 0);
+            //Console.Write($"P X:{_player.Coordinates.X}  Y:{_player.Coordinates.Y}   ");
+            //Console.SetCursorPosition(_Scale.X * 2 + 5, 1);
+            //Console.Write($"Длина хвоста {_player.Tails.Count}");
+            //if(_player.Tails.Count > 0)
+            //{
+            //    Console.SetCursorPosition(_Scale.X * 2 + 5, 2);
+            //    Console.Write($"Последний хвост на координатах X:{_player.Tails.Peek().position.X}   Y:{_player.Tails.Peek().position.Y}   ");
+            //}
+            
 
         }
-        private void СhangeGameObject(Coordinates Chang1, Coordinates Chang2)
+        private void ChangeGameObject(Coordinates Chang1, Coordinates Chang2)
         {
              
             GameObject memory = matrix[Chang1.X, Chang1.Y];
             matrix[Chang1.X, Chang1.Y] = matrix[Chang2.X, Chang2.Y];
             matrix[Chang2.X, Chang2.Y] = memory;
         }
-        public void ChaingeTail(Coordinates coordinateFlor)
-        {
-            if(_eateApple == true)
-                _eateApple = false;
-            else
-            {
-                Coordinates TailXY = new Coordinates();
-                TailXY = _player.LastTail();
-                _player.MovePatr(coordinateFlor);
-                СhangeGameObject(coordinateFlor, TailXY);
-            }
-
-        }
         public void MakeApple()
         {
-            if(_time%25 == 0)
+            if(_time%20 == 0)
             {
+                int maxiteration = _Scale.X-1+ _Scale.Y - 1 - _player.Tails.Count-2;
                 bool flag0 = true;
                 while(flag0)
                 {
@@ -381,6 +438,7 @@ namespace ConsoleApp26
         {
             _time++;
         }
+        
     }
     class Renderer
     {
@@ -396,10 +454,10 @@ namespace ConsoleApp26
             simbolMatrix = new char[CasheScale.X, CasheScale.Y];
         }
 
-        public void Displaying()
+        public void Displaying(int Time)
         {
 
-            if(GameObgectMemory._time%8 == 0)
+            if(Time % 8 == 0)
             {
                 Console.ForegroundColor = consoleColors[indexColor];
                 if (indexColor + 1 >= consoleColors.Length)
@@ -454,10 +512,14 @@ namespace ConsoleApp26
         {
             _sprite = ' ';
         }
+        public Floor(char Sprite)
+        {
+            _sprite = Sprite;
+        }
     }
     class Player : GameObject
     {
-        private Queue<Tail> Tails = new Queue<Tail>();
+        public Queue<Tail> Tails = new Queue<Tail>();
         public VectorSimple Direction;
         public Coordinates Coordinates;
         public Player(int x, int y)
@@ -486,32 +548,11 @@ namespace ConsoleApp26
                     break;
             }
         }
-        public Tail AddTail(Coordinates coordinates)
-        {
-            Tail tail = new Tail(coordinates);
-            Tails.Enqueue(tail);
-            return tail;  //Поменя с Tails.Peak
-        }
-        public int LenghTail()
-        {
-            return Tails.Count;
-        }
-        public Coordinates LastTail()
-        {
-            Tail mem = Tails.Peek();
-            return mem.position;
-        }
-        public void MovePatr(Coordinates coordinates)
-        {
-            Tail mem = Tails.Dequeue();
-            mem.position = coordinates;
-            Tails.Enqueue(mem);
-        }
-
     }
     class Tail : GameObject
     {
         public Coordinates position = new Coordinates(); 
+        public bool IsLastTeil = false;
         public Tail(Coordinates coordinates)
         {
             _sprite = 'O';
