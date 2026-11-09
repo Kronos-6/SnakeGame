@@ -12,8 +12,9 @@ namespace ConsoleApp26
     internal class Program
     {
 
-        const int ScaleMapX = 15;  // Тетс Git
-        const int ScaleMapY = 30;   //Должен быть меньше ScaleMapX 
+        static int ScaleMapX = 15;  // 15   /28 Max  /4
+        static int ScaleMapY = 30;   //30   /120 Max  /4
+        static int TimeSpeed = 167;
 
         //static Vector Input;
         static int InputInt;
@@ -22,9 +23,6 @@ namespace ConsoleApp26
 
         static void Main(string[] args)
         {
-            
-            Console.WriteLine("Загрузка");
-            Thread.Sleep(150);
             var t = new Thread(InputSystem)
             {
                 IsBackground = true,
@@ -33,31 +31,126 @@ namespace ConsoleApp26
             t.Start();
             Console.OutputEncoding = Encoding.UTF8;
             Console.SetBufferSize(120, 300);
-            Console.CursorVisible = false;
             Console.BackgroundColor = ConsoleColor.Black;
-            GameObgectMemory MapObject = new GameObgectMemory(ScaleMapX, ScaleMapY);
-            MapObject._renderer.Displaying(MapObject._time);
+            Console.CursorVisible = true;
+              //mim 20 /max 800
+            //int void0 = 17;
+            //string iqA1 = "Змейка";
+            //Console.WriteLine(new string(' ', void0) + iqA1 + new string(' ', void0));
+            //Console.WriteLine(new string('-', void0 *2+ iqA1.Length));
+            MenuStart();
+            return;
+
+
+        }
+        static void MenuStart()
+        {
+            Console.Clear();
+            Console.Write("Быстрая игра? y/n: ");
+            string start0 = Console.ReadLine();
+            if (start0 == "y" || start0 == "Y")
+            {
+                MainCycle();
+            }
+            else if (start0 == "n" || start0 == "N")
+            {
+                MenuSetting();
+            }
+            else
+            {
+                MenuStart();
+            }
+        }
+        static void MenuSetting()
+        {
+            Console.Clear();
+            int void0 = 17;
+            string iqA1 = "Настройки";
+            Console.WriteLine(new string(' ', void0) + iqA1 + new string(' ', void0));
+            Console.WriteLine(new string('-', void0 * 2 + iqA1.Length));
+            Console.WriteLine("1. Вернутся в игру \n"+ "2. Выбор сложности \n" + "3. Настроить размер карты");
+            Console.WriteLine("4. Настройки разработчка (В разработке,к  не доступоно)");
+            string SettingInput = Console.ReadLine();
+            if(SettingInput == "1")
+            {
+                Console.Clear();
+                MainCycle();
+                
+            }
+            else if (SettingInput == "2")
+            {
+                Console.Clear();
+                Console.WriteLine("1.Легко \n" + "2.Нормально \n" + "3.Тяжело \n");
+                string SettingInput1 = Console.ReadLine();
+                if (SettingInput1 == "1")
+                {
+                    TimeSpeed = 300;
+                }
+                else if(SettingInput1 == "2")
+                {
+                    TimeSpeed = 167;
+                }
+                else if(SettingInput1 == "3")
+                {
+                    TimeSpeed = 80;
+                }
+                else
+                {
+                    MenuSetting();
+                }
+            }
+            else if (SettingInput == "3")
+            {
+                Console.Clear();
+                MainCycle();
+            }
+            else
+            {
+                Console.WriteLine("Команда не расползнона");
+            }
+        }
+        static void MainCycle()
+        {
+            Console.CursorVisible = false;
+            Console.Clear();
+            Console.Write("Загрузка");
+            Console.CursorVisible = false;
+            GameObgectManager MapObject = new GameObgectManager(ScaleMapX, ScaleMapY, TimeSpeed);
+            Thread.Sleep(150);
+            Console.SetCursorPosition(0, 0);
+            Console.WriteLine("           ");
+            MapObject._renderer.Displaying(MapObject._time, MapObject.Score,  MapObject._Scale);
             while (true)
             {
-                MapObject.TmimeUp();
+                MapObject.TechnicalStep(ref TimeSpeed);
                 MapObject.MakeApple();
                 MapObject.TurnPlayer(InputInt);
                 if (MapObject.ISWall() == true)
                 {
-                    MapObject._renderer.Displaying(MapObject._time);
+                    MapObject._renderer.Displaying(MapObject._time, MapObject.Score, MapObject._Scale);
                     break;
                 }
                 MapObject.MovePlayer();
-                MapObject._renderer.Displaying(MapObject._time);
-                Thread.Sleep(250); //300 //150
+                MapObject._renderer.Displaying(MapObject._time, MapObject.Score, MapObject._Scale);
+                Thread.Sleep(TimeSpeed); //300 //150
             }
             Console.ForegroundColor = ConsoleColor.White;
-            Console.SetCursorPosition(ScaleMapX*2 +5, ScaleMapY/4);// Самая магическая часть программы
+            Console.SetCursorPosition(ScaleMapX * 2 + 5, ScaleMapY / 4);// Самая магическая часть программы
             Console.WriteLine("Игра окончена");
             Thread.Sleep(2000);
-            Console.SetCursorPosition(0, ScaleMapX);
-        }
+            Console.SetCursorPosition(0, ScaleMapX+1);
+            Console.CursorVisible = true;
+            Console.WriteLine("Enter чтобы начать заново, s чтобы открыть настройки: ");
+            string gameMenu =  Console.ReadLine();
+            if (gameMenu == "s" || gameMenu == "S")
+            {
 
+            }
+            else 
+            {
+                MainCycle();
+            }
+        }
         static void InputSystem()
         {
             while (true)
@@ -95,49 +188,6 @@ namespace ConsoleApp26
                         break;
                 }
             }
-        }
-
-    }
-    public struct Vector
-    {
-        public bool _up { get; private set; }
-        public bool _down { get; private set; }
-        public bool _left { get; private set; }
-        public bool _right { get; private set; }
-        public Vector(bool Up, bool Down, bool Left, bool Right)
-        {
-            _up = Up;
-            _down = Down;
-            _left = Left;
-            _right = Right;
-        }
-        public void ChangeUp()
-        {
-            _up = true;
-            _down = false;
-            _left = false;
-            _right = false;
-        }
-        public void ChangeDown()
-        {
-            _up = false;
-            _down = true;
-            _left = false;
-            _right = false;
-        }
-        public void ChangeLeft()
-        {
-            _up = false;
-            _down = false;
-            _left = true;
-            _right = false;
-        }
-        public void ChangeRight()
-        {
-            _up = false;
-            _down = false;
-            _left = false;
-            _right = true;
         }
 
     }
@@ -238,87 +288,36 @@ namespace ConsoleApp26
             this.Y = Y;
         }
     }
-    class GameObgectMemory
+    class GameObgectManager
     {
         private GameObject[,] matrix;
-        public Coordinates _Scale { get; private set; }
         public Renderer _renderer { get; private set; }
         private Player _player;
+        private static readonly Floor EmptyFloor = new Floor();
+        private Random rnd = new Random();
+        public Coordinates _Scale { get; private set; }
         public int _time { get; private set; }
         private bool _ateApple = false;
-        private Random rnd = new Random();
-        private static readonly Floor EmptyFloor = new Floor();
-        public GameObgectMemory(int x, int y)
+        private int _freeAplle = 0;
+        private float _delayOnePercent =0;
+        private float minSpeed = 0;
+        public int Score { get; private set; }
+        private int _scoreMem = 0;
+        public GameObgectManager(int x, int y, int delay)
         {
             matrix = new GameObject[x, y];
             _Scale = new Coordinates(x, y);
             _renderer = new Renderer(this, _Scale, matrix);
             CreatingAScene();
             _time = 0;
-        }
-        private void CreatingAScene()
-        {
-            for (int i = 0; i < matrix.GetLength(0); i++)
-            {
-                for (int j = 0; j < matrix.GetLength(1); j++)
-                {
-                    if (i == 0 || j == 0 || i == matrix.GetLength(0) - 1 || j == matrix.GetLength(1) - 1)
-                    {
-                        matrix[i, j] = new Woall();
-                    }
-                    else
-                    {
-                        matrix[i, j] = new Floor();
-                    }
-                }
-            }
-            _player = new Player(_Scale.X / 2, _Scale.Y / 2);
-            matrix[_Scale.X / 2, _Scale.Y / 2] = _player;
+            Score = 0;
+            _delayOnePercent = delay / 100;
+            minSpeed = _delayOnePercent * 48;
         }
         public void TurnPlayer(int index)
         {
             _player.Direction.ChangeMove(index);
             _player.HeadOrientation();
-        }
-        private Coordinates Coordinator(Coordinates player)
-        {
-            int direct = _player.Direction.CheckingStatus();
-            switch (direct)
-            {
-                case 0:
-                    player.X--;
-                    break;
-                case 1:
-                    player.X++;
-                    break;
-                case 2:
-                    player.Y--;
-                    break;
-                case 3:
-                    player.Y++;
-                    break;
-            }
-            return player;
-        }
-        private Coordinates CoordinatorMinos(Coordinates player)
-        {
-            int direct = _player.Direction.CheckingStatus();
-            switch (direct)
-            {
-                case 0:
-                    player.X++;
-                    break;
-                case 1:
-                    player.X--;
-                    break;
-                case 2:
-                    player.Y++;
-                    break;
-                case 3:
-                    player.Y--;
-                    break;
-            }
-            return player;
         }
         public bool ISWall()
         {
@@ -345,21 +344,14 @@ namespace ConsoleApp26
             }
             else if (matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Apple)
             {
+                _freeAplle--;
                 _ateApple = true;
+                Score++;
+                _scoreMem++;
                 return false;
             }
             else
                 return false;
-
-
-        }
-        private void MakeTail(Coordinates coordinates)
-        {
-            Tail tail = new Tail(coordinates);
-            matrix[coordinates.X, coordinates.Y] = tail;
-            _player.Tails.Enqueue(tail);
-
-
         }
         public void MovePlayer()
         {
@@ -408,6 +400,90 @@ namespace ConsoleApp26
             
 
         }
+        public void MakeApple()
+        {
+            if (_time%25 == 0)
+            {
+                int maxiteration = ((_Scale.X - 2) * (_Scale.Y - 2)) - _player.Tails.Count - 1 - _freeAplle;
+                if(maxiteration < 0)
+                    maxiteration = 0;
+                int index = 0;
+                bool flag0 = true;
+                while(flag0)
+                {
+
+                    if (index   >= maxiteration)
+                        break;
+                    int a = rnd.Next(1, _Scale.X - 1);
+                    int b = rnd.Next(1, _Scale.Y - 1);
+                    if (matrix[a,b] is Floor)
+                    {
+                        matrix[a, b] = new Apple();
+                        index++;
+                        _freeAplle++;
+                        flag0 = false;
+                    }
+                }
+                
+            }
+        }
+        public void TechnicalStep(ref int _delay)
+        {
+            TimeAtTop();
+            GrowingComplexity(ref _delay);
+
+        }
+        private void TimeAtTop()
+        {
+            _time++;
+        }
+        private void GrowingComplexity(ref int _delay0)
+        {
+            if (_scoreMem % 5 == 0 && _scoreMem > 0 && _delay0>minSpeed + 8)
+            {
+                _scoreMem = 0;
+                _delay0 -= 8;
+            }
+        }
+        private void CreatingAScene()
+        {
+            for (int i = 0; i < matrix.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrix.GetLength(1); j++)
+                {
+                    if (i == 0 || j == 0 || i == matrix.GetLength(0) - 1 || j == matrix.GetLength(1) - 1)
+                    {
+                        matrix[i, j] = new Woall();
+                    }
+                    else
+                    {
+                        matrix[i, j] = new Floor();
+                    }
+                }
+            }
+            _player = new Player(_Scale.X / 2, _Scale.Y / 2);
+            matrix[_Scale.X / 2, _Scale.Y / 2] = _player;
+        }
+        private Coordinates Coordinator(Coordinates player)
+        {
+            int direct = _player.Direction.CheckingStatus();
+            switch (direct)
+            {
+                case 0:
+                    player.X--;
+                    break;
+                case 1:
+                    player.X++;
+                    break;
+                case 2:
+                    player.Y--;
+                    break;
+                case 3:
+                    player.Y++;
+                    break;
+            }
+            return player;
+        }
         private void ChangeGameObject(Coordinates Chang1, Coordinates Chang2)
         {
              
@@ -415,30 +491,15 @@ namespace ConsoleApp26
             matrix[Chang1.X, Chang1.Y] = matrix[Chang2.X, Chang2.Y];
             matrix[Chang2.X, Chang2.Y] = memory;
         }
-        public void MakeApple()
+        private void MakeTail(Coordinates coordinates)
         {
-            if(_time%20 == 0)
-            {
-                int maxiteration = _Scale.X-1+ _Scale.Y - 1 - _player.Tails.Count-2;
-                bool flag0 = true;
-                while(flag0)
-                {
-                    int a = rnd.Next(1, _Scale.X - 1);
-                    int b = rnd.Next(1, _Scale.Y - 1);
-                    if (matrix[a,b] is Floor)
-                    {
-                        matrix[a, b] = new Apple();
-                        flag0 = false;
-                    }
-                }
-                
-            }
+            Tail tail = new Tail(coordinates);
+            matrix[coordinates.X, coordinates.Y] = tail;
+            _player.Tails.Enqueue(tail);
+
+
+
         }
-        public void TmimeUp()
-        {
-            _time++;
-        }
-        
     }
     class Renderer
     {
@@ -447,14 +508,14 @@ namespace ConsoleApp26
         private readonly ConsoleColor[] consoleColors = { ConsoleColor.Magenta, ConsoleColor.Blue, ConsoleColor.Cyan, ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.Red, ConsoleColor.White };
         private int indexColor = 0;
         private char[,] simbolMatrix;
-        public Renderer(GameObgectMemory matrix, Coordinates casheScale, GameObject[,] Matrix)
+        public Renderer(GameObgectManager matrix, Coordinates casheScale, GameObject[,] Matrix)
         {
             _matrix = Matrix;
             CasheScale = casheScale;
             simbolMatrix = new char[CasheScale.X, CasheScale.Y];
         }
 
-        public void Displaying(int Time)
+        public void Displaying(int Time, int score, Coordinates scale)
         {
 
             if(Time % 8 == 0)
@@ -473,7 +534,7 @@ namespace ConsoleApp26
                     simbolMatrix[i, j] = _matrix[i, j]._sprite;
                 }
             }
-            var Window = new StringBuilder(25 * 25);
+            var Window = new StringBuilder(scale.X*scale.Y);
             for (int i = 0; i < simbolMatrix.GetLength(0); i++)
             {
                 for (int j = 0; j < simbolMatrix.GetLength(1); j++)
@@ -483,8 +544,8 @@ namespace ConsoleApp26
                 Window.Append('\n');
             }
             Console.SetCursorPosition(0, 0);
-            Console.WriteLine(Window.ToString());
-
+            Console.Write(Window.ToString());
+            Console.WriteLine($"Счёт {score}  ");
         }
 
     }
@@ -563,7 +624,7 @@ namespace ConsoleApp26
     {
         public Apple()
         {
-            _sprite = '$';
+            _sprite = '@';
         }
     }
 }
