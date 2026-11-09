@@ -15,7 +15,7 @@ namespace ConsoleApp26
         static int ScaleMapX = 15;  // 15   /28 Max  /4
         static int ScaleMapY = 30;   //30   /120 Max  /4
         static int TimeSpeed = 167;
-
+         
         //static Vector Input;
         static int InputInt;
 
@@ -94,18 +94,34 @@ namespace ConsoleApp26
                 {
                     TimeSpeed = 80;
                 }
-                else
-                {
-                    MenuSetting();
-                }
+                MenuSetting();
             }
             else if (SettingInput == "3")
             {
                 Console.Clear();
+                Console.WriteLine("1.Маленькая \n" + "2.Нормальная  \n" + "3.Большая \n");
+                string SettingInput1 = Console.ReadLine();
+                if (SettingInput1 == "1")
+                {
+                    ScaleMapX = 8;
+                    ScaleMapY = 15;
+                }
+                else if (SettingInput1 == "2")
+                {
+                    ScaleMapX = 15;
+                    ScaleMapY = 30;
+                }
+                else if (SettingInput1 == "3")
+                {
+                    ScaleMapX = 28;
+                    ScaleMapY = 120;
+                }
+                MenuSetting();
                 MainCycle();
             }
             else
             {
+                MainCycle();
                 Console.WriteLine("Команда не расползнона");
             }
         }
@@ -144,7 +160,7 @@ namespace ConsoleApp26
             string gameMenu =  Console.ReadLine();
             if (gameMenu == "s" || gameMenu == "S")
             {
-
+                MenuSetting();
             }
             else 
             {
