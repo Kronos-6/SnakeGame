@@ -15,7 +15,8 @@ namespace ConsoleApp26
         static int ScaleMapX = 15;  // 15   /28 Max  /4
         static int ScaleMapY = 30;   //30   /120 Max  /4
         static int TimeSpeed = 167;
-         
+        static int StaticTimeSpeed = 167;
+
         //static Vector Input;
         static int InputInt;
 
@@ -23,6 +24,7 @@ namespace ConsoleApp26
 
         static void Main(string[] args)
         {
+
             var t = new Thread(InputSystem)
             {
                 IsBackground = true,
@@ -84,15 +86,15 @@ namespace ConsoleApp26
                 string SettingInput1 = Console.ReadLine();
                 if (SettingInput1 == "1")
                 {
-                    TimeSpeed = 300;
+                    StaticTimeSpeed = 300;
                 }
                 else if(SettingInput1 == "2")
                 {
-                    TimeSpeed = 167;
+                    StaticTimeSpeed = 167;
                 }
                 else if(SettingInput1 == "3")
                 {
-                    TimeSpeed = 80;
+                    StaticTimeSpeed = 80;
                 }
                 MenuSetting();
             }
@@ -127,6 +129,7 @@ namespace ConsoleApp26
         }
         static void MainCycle()
         {
+            TimeSpeed = StaticTimeSpeed;
             Console.CursorVisible = false;
             Console.Clear();
             Console.Write("Загрузка");
