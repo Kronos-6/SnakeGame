@@ -12,7 +12,7 @@ namespace ConsoleApp26
     internal class Program
     {
 
-        static int ScaleMapX = 15;  // 15   /28 Max  /4
+        static int ScaleMapX = 15;  // 15   /25 Max  /4
         static int ScaleMapY = 30;   //30   /120 Max  /4
         static int TimeSpeed = 167;
         static int StaticTimeSpeed = 167;
@@ -115,7 +115,7 @@ namespace ConsoleApp26
                 }
                 else if (SettingInput1 == "3")
                 {
-                    ScaleMapX = 28;
+                    ScaleMapX = 25;
                     ScaleMapY = 120;
                 }
                 MenuSetting();
@@ -154,7 +154,11 @@ namespace ConsoleApp26
                 Thread.Sleep(TimeSpeed); //300 //150
             }
             Console.ForegroundColor = ConsoleColor.White;
-            Console.SetCursorPosition(ScaleMapX * 2 + 5, ScaleMapY / 4);// Самая магическая часть программы
+            if(ScaleMapY<90)
+            {
+                Console.SetCursorPosition(ScaleMapX * 2 + 5, ScaleMapY / 4);// Самая магическая часть программы
+            }
+            
             Console.WriteLine("Игра окончена");
             Thread.Sleep(2000);
             Console.SetCursorPosition(0, ScaleMapX+1);
