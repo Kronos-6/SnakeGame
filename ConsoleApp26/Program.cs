@@ -16,6 +16,7 @@ namespace ConsoleApp26
         static int ScaleMapY = 30;   //30   /120 Max  /4
         static int TimeSpeed = 167;
         static int StaticTimeSpeed = 167;
+        static bool SecondСohort;
 
         //static Vector Input;
         static int InputInt;
@@ -129,6 +130,7 @@ namespace ConsoleApp26
         }
         static void MainCycle()
         {
+            SecondСohort = true;
             TimeSpeed = StaticTimeSpeed;
             Console.CursorVisible = false;
             Console.Clear();
@@ -158,7 +160,7 @@ namespace ConsoleApp26
             {
                 Console.SetCursorPosition(ScaleMapX * 2 + 5, ScaleMapY / 4);// Самая магическая часть программы
             }
-            
+            SecondСohort = false;
             Console.WriteLine("Игра окончена");
             Thread.Sleep(2000);
             Console.SetCursorPosition(0, ScaleMapX+1);
@@ -178,37 +180,40 @@ namespace ConsoleApp26
         {
             while (true)
             {
-                //Console.WriteLine("Привет из 2 потока");
-                ConsoleKeyInfo key = Console.ReadKey(true);
-                switch (key.Key)
+                if(SecondСohort)
                 {
-                    case ConsoleKey.W:
-                        InputInt = 0;
-                        break;
-                    case ConsoleKey.S:
-                        InputInt = 1;
-                        break;
-                    case ConsoleKey.A:
-                        InputInt = 2;
-                        break;
-                    case ConsoleKey.D:
-                        InputInt = 3;
-                        break;
-                }
-                switch (key.Key)
-                {
-                    case ConsoleKey.UpArrow:
-                        InputInt = 0;
-                        break;
-                    case ConsoleKey.DownArrow:
-                        InputInt = 1;
-                        break;
-                    case ConsoleKey.LeftArrow:
-                        InputInt = 2;
-                        break;
-                    case ConsoleKey.RightArrow:
-                        InputInt = 3;
-                        break;
+                    //Console.WriteLine("Привет из 2 потока");
+                    ConsoleKeyInfo key = Console.ReadKey(true);
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.W:
+                            InputInt = 0;
+                            break;
+                        case ConsoleKey.S:
+                            InputInt = 1;
+                            break;
+                        case ConsoleKey.A:
+                            InputInt = 2;
+                            break;
+                        case ConsoleKey.D:
+                            InputInt = 3;
+                            break;
+                    }
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.UpArrow:
+                            InputInt = 0;
+                            break;
+                        case ConsoleKey.DownArrow:
+                            InputInt = 1;
+                            break;
+                        case ConsoleKey.LeftArrow:
+                            InputInt = 2;
+                            break;
+                        case ConsoleKey.RightArrow:
+                            InputInt = 3;
+                            break;
+                    }
                 }
             }
         }
@@ -573,7 +578,7 @@ namespace ConsoleApp26
 
     }
 
-    class GameObject
+    abstract class GameObject
     {
         public char _sprite { get; protected set; }
         public GameObject()
