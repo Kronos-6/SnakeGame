@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -8,24 +7,32 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp26
 {
-
     internal class Program
     {
-
         static int ScaleMapX = 15;  // 15   /25 Max  /4
         static int ScaleMapY = 30;   //30   /120 Max  /4
         static int TimeSpeed = 167;
         static int StaticTimeSpeed = 167;
-        static bool SecondСohort;
-
-        //static Vector Input;
+        static bool SecondCohort;
         static int InputInt;
 
+        private static Action<int> _speedHandlers;
+        public static event Action<int> SpeedChanged
+        {
+            add { _speedHandlers += value; }
+            remove { _speedHandlers -= value; }
+        }
 
+        public static void Info(params object[] parts)
+        {
+            var sb = new StringBuilder();
+            foreach (var p in parts) sb.Append(p).Append(' ');
+            Console.WriteLine(sb.ToString());
+        }
 
         static void Main(string[] args)
         {
-
+            SpeedChanged += s => { };
             var t = new Thread(InputSystem)
             {
                 IsBackground = true,
@@ -36,16 +43,15 @@ namespace ConsoleApp26
             Console.SetBufferSize(120, 300);
             Console.BackgroundColor = ConsoleColor.Black;
             Console.CursorVisible = true;
-              //mim 20 /max 800
+            //mim 20 /max 800
             //int void0 = 17;
             //string iqA1 = "Змейка";
             //Console.WriteLine(new string(' ', void0) + iqA1 + new string(' ', void0));
             //Console.WriteLine(new string('-', void0 *2+ iqA1.Length));
             MenuStart();
             return;
-
-
         }
+
         static void MenuStart()
         {
             Console.Clear();
@@ -64,6 +70,7 @@ namespace ConsoleApp26
                 MenuStart();
             }
         }
+
         static void MenuSetting()
         {
             Console.Clear();
@@ -71,14 +78,13 @@ namespace ConsoleApp26
             string iqA1 = "Настройки";
             Console.WriteLine(new string(' ', void0) + iqA1 + new string(' ', void0));
             Console.WriteLine(new string('-', void0 * 2 + iqA1.Length));
-            Console.WriteLine("1. Вернутся в игру \n"+ "2. Выбор сложности \n" + "3. Настроить размер карты");
+            Console.WriteLine("1. Вернутся в игру \n" + "2. Выбор сложности \n" + "3. Настроить размер карты");
             Console.WriteLine("4. Настройки разработчка (В разработке,к  не доступоно)");
             string SettingInput = Console.ReadLine();
-            if(SettingInput == "1")
+            if (SettingInput == "1")
             {
                 Console.Clear();
                 MainCycle();
-                
             }
             else if (SettingInput == "2")
             {
@@ -89,14 +95,15 @@ namespace ConsoleApp26
                 {
                     StaticTimeSpeed = 300;
                 }
-                else if(SettingInput1 == "2")
+                else if (SettingInput1 == "2")
                 {
                     StaticTimeSpeed = 167;
                 }
-                else if(SettingInput1 == "3")
+                else if (SettingInput1 == "3")
                 {
                     StaticTimeSpeed = 80;
                 }
+                _speedHandlers?.Invoke(StaticTimeSpeed);
                 MenuSetting();
             }
             else if (SettingInput == "3")
@@ -128,19 +135,20 @@ namespace ConsoleApp26
                 Console.WriteLine("Команда не расползнона");
             }
         }
+
         static void MainCycle()
         {
-            SecondСohort = true;
+            SecondCohort = true;
             TimeSpeed = StaticTimeSpeed;
             Console.CursorVisible = false;
             Console.Clear();
             Console.Write("Загрузка");
+            Console.Clear();
             Console.CursorVisible = false;
             GameObgectManager MapObject = new GameObgectManager(ScaleMapX, ScaleMapY, TimeSpeed);
-            Thread.Sleep(150);
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("           ");
-            MapObject._renderer.Displaying(MapObject._time, MapObject.Score,  MapObject._Scale);
+            MapObject._renderer.Displaying(MapObject._time, MapObject.Score, MapObject._Scale);
             while (true)
             {
                 MapObject.TechnicalStep(ref TimeSpeed);
@@ -156,33 +164,33 @@ namespace ConsoleApp26
                 Thread.Sleep(TimeSpeed); //300 //150
             }
             Console.ForegroundColor = ConsoleColor.White;
-            if(ScaleMapY<90)
+            if (ScaleMapY < 90)
             {
                 Console.SetCursorPosition(ScaleMapX * 2 + 5, ScaleMapY / 4);// Самая магическая часть программы
             }
-            SecondСohort = false;
+            SecondCohort = false;
             Console.WriteLine("Игра окончена");
             Thread.Sleep(2000);
-            Console.SetCursorPosition(0, ScaleMapX+1);
+            Console.SetCursorPosition(0, ScaleMapX + 1);
             Console.CursorVisible = true;
             Console.WriteLine("Enter чтобы начать заново, s чтобы открыть настройки: ");
-            string gameMenu =  Console.ReadLine();
+            string gameMenu = Console.ReadLine();
             if (gameMenu == "s" || gameMenu == "S")
             {
                 MenuSetting();
             }
-            else 
+            else
             {
                 MainCycle();
             }
         }
+
         static void InputSystem()
         {
             while (true)
             {
-                if(SecondСohort)
+                if (SecondCohort)
                 {
-                    //Console.WriteLine("Привет из 2 потока");
                     ConsoleKeyInfo key = Console.ReadKey(true);
                     switch (key.Key)
                     {
@@ -217,8 +225,8 @@ namespace ConsoleApp26
                 }
             }
         }
-
     }
+
     public struct VectorSimple
     {
         public bool? Vertical;
@@ -229,8 +237,7 @@ namespace ConsoleApp26
             Horizontal = null;
             switch (index)
             {
-                case 0:
-                    ChangeUp(); break;
+                case 0: ChangeUp(); break;
                 case 1: ChangeDown(); break;
                 case 2: ChangeLeft(); break;
                 case 3: ChangeRight(); break;
@@ -300,12 +307,10 @@ namespace ConsoleApp26
                 default:
                     Console.WriteLine("Ощибка VectorSimple ChangeMove index не может более 4 и менее 0");
                     break;
-
-
             }
         }
-
     }
+
     public struct Coordinates
     {
         public int X;
@@ -315,7 +320,14 @@ namespace ConsoleApp26
             this.X = X;
             this.Y = Y;
         }
+
+        public static implicit operator int(Coordinates c) => c.X * 1000 + c.Y;
+        public static explicit operator Coordinates(int v) => new Coordinates(v / 1000, v % 1000);
+        public static Coordinates operator +(Coordinates a, Coordinates b) => new Coordinates(a.X + b.X, a.Y + b.Y);
+
+        public bool NextTo(Coordinates other) => Math.Abs(X - other.X) + Math.Abs(Y - other.Y) == 1;
     }
+
     class GameObgectManager
     {
         private GameObject[,] matrix;
@@ -327,10 +339,13 @@ namespace ConsoleApp26
         public int _time { get; private set; }
         private bool _ateApple = false;
         private int _freeAplle = 0;
-        private float _delayOnePercent =0;
+        private float _delayOnePercent = 0;
         private float minSpeed = 0;
         public int Score { get; private set; }
         private int _scoreMem = 0;
+
+        public Func<int, int> OnScore = s => s;
+
         public GameObgectManager(int x, int y, int delay)
         {
             matrix = new GameObject[x, y];
@@ -341,15 +356,36 @@ namespace ConsoleApp26
             Score = 0;
             _delayOnePercent = delay / 100;
             minSpeed = _delayOnePercent * 48;
+            CountCellsByKind();
         }
+
+        private void CountCellsByKind()
+        {
+            var kinds = matrix.Cast<GameObject>()
+                .GroupBy(g => g.GetType().Name)
+                .Select(g => new { Name = g.Key, Total = g.Count() })
+                .OrderByDescending(g => g.Total)
+                .ToList();
+
+            foreach (var k in kinds)
+                Program.Info(nameof(CountCellsByKind), k.Name, k.Total);
+        }
+
+        public IEnumerable<Tail> GetTails()
+        {
+            foreach (var tail in _player.Tails)
+                yield return tail;
+        }
+
         public void TurnPlayer(int index)
         {
             _player.Direction.ChangeMove(index);
             _player.HeadOrientation();
         }
+
         public bool ISWall()
         {
-            if(_player.Tails.Count>0)
+            if (_player.Tails.Count > 0)
             {
                 _player.Tails.Peek().IsLastTeil = true;
             }
@@ -363,9 +399,9 @@ namespace ConsoleApp26
                 else
                     return false;
             }
-            else if(matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Tail q)
+            else if (matrix[coordinatesPlayer.X, coordinatesPlayer.Y] is Tail q)
             {
-                if(q.IsLastTeil == true && _player.Tails.Count>1)
+                if (q.IsLastTeil == true && _player.Tails.Count > 1)
                     return false;
                 else
                     return true;
@@ -374,21 +410,21 @@ namespace ConsoleApp26
             {
                 _freeAplle--;
                 _ateApple = true;
-                Score++;
+                Score = OnScore(Score + 1);
                 _scoreMem++;
                 return false;
             }
             else
                 return false;
         }
+
         public void MovePlayer()
         {
             Coordinates lastPlayer = _player.Coordinates;
             _player.Coordinates = Coordinator(_player.Coordinates);
-            
-            if(_ateApple == false && _player.Tails.Count>0)
+
+            if (_ateApple == false && _player.Tails.Count > 0)
             {
-                
                 Tail memTail = _player.Tails.Dequeue();
                 Coordinates memCoordinaTeil = memTail.position;
                 matrix[memCoordinaTeil.X, memCoordinaTeil.Y] = EmptyFloor;   //Финальный костыль 
@@ -403,9 +439,9 @@ namespace ConsoleApp26
                 memTail.position = lastPlayer;
                 memTail.IsLastTeil = false;
                 _player.Tails.Enqueue(memTail);
-                _player.Tails.Peek().IsLastTeil= true;
+                _player.Tails.Peek().IsLastTeil = true;
             }
-            else if(_ateApple == true)
+            else if (_ateApple == true)
             {
                 ChangeGameObject(lastPlayer, _player.Coordinates);
                 MakeTail(lastPlayer);
@@ -425,54 +461,63 @@ namespace ConsoleApp26
             //    Console.SetCursorPosition(_Scale.X * 2 + 5, 2);
             //    Console.Write($"Последний хвост на координатах X:{_player.Tails.Peek().position.X}   Y:{_player.Tails.Peek().position.Y}   ");
             //}
-            
-
         }
+
         public void MakeApple()
         {
-            if (_time%25 == 0)
+            if (_time % 25 == 0)
             {
-                int maxiteration = ((_Scale.X - 2) * (_Scale.Y - 2)) - _player.Tails.Count - 1 - _freeAplle;
-                if(maxiteration < 0)
-                    maxiteration = 0;
-                int index = 0;
-                bool flag0 = true;
-                while(flag0)
+                if (TryFindFree(out Coordinates cell))
                 {
-
-                    if (index   >= maxiteration)
-                        break;
-                    int a = rnd.Next(1, _Scale.X - 1);
-                    int b = rnd.Next(1, _Scale.Y - 1);
-                    if (matrix[a,b] is Floor)
-                    {
-                        matrix[a, b] = new Apple();
-                        index++;
-                        _freeAplle++;
-                        flag0 = false;
-                    }
+                    matrix[cell.X, cell.Y] = new Apple();
+                    _freeAplle++;
                 }
-                
             }
         }
+
+        private bool TryFindFree(out Coordinates result)
+        {
+            result = new Coordinates(0, 0);
+            int maxiteration = ((_Scale.X - 2) * (_Scale.Y - 2)) - _player.Tails.Count - 1 - _freeAplle;
+            if (maxiteration < 0)
+                maxiteration = 0;
+            int index = 0;
+            bool flag0 = true;
+            while (flag0)
+            {
+                if (index >= maxiteration)
+                    break;
+                int a = rnd.Next(1, _Scale.X - 1);
+                int b = rnd.Next(1, _Scale.Y - 1);
+                if (matrix[a, b] is Floor)
+                {
+                    result = new Coordinates(a, b);
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public void TechnicalStep(ref int _delay)
         {
             TimeAtTop();
             GrowingComplexity(ref _delay);
-
         }
+
         private void TimeAtTop()
         {
             _time++;
         }
+
         private void GrowingComplexity(ref int _delay0)
         {
-            if (_scoreMem % 5 == 0 && _scoreMem > 0 && _delay0>minSpeed + 8)
+            if (_scoreMem % 5 == 0 && _scoreMem > 0 && _delay0 > minSpeed + 8)
             {
                 _scoreMem = 0;
                 _delay0 -= 8;
             }
         }
+
         private void CreatingAScene()
         {
             for (int i = 0; i < matrix.GetLength(0); i++)
@@ -492,6 +537,7 @@ namespace ConsoleApp26
             _player = new Player(_Scale.X / 2, _Scale.Y / 2);
             matrix[_Scale.X / 2, _Scale.Y / 2] = _player;
         }
+
         private Coordinates Coordinator(Coordinates player)
         {
             int direct = _player.Direction.CheckingStatus();
@@ -512,23 +558,22 @@ namespace ConsoleApp26
             }
             return player;
         }
+
         private void ChangeGameObject(Coordinates Chang1, Coordinates Chang2)
         {
-             
             GameObject memory = matrix[Chang1.X, Chang1.Y];
             matrix[Chang1.X, Chang1.Y] = matrix[Chang2.X, Chang2.Y];
             matrix[Chang2.X, Chang2.Y] = memory;
         }
+
         private void MakeTail(Coordinates coordinates)
         {
             Tail tail = new Tail(coordinates);
             matrix[coordinates.X, coordinates.Y] = tail;
             _player.Tails.Enqueue(tail);
-
-
-
         }
     }
+
     class Renderer
     {
         private readonly GameObject[,] _matrix;
@@ -536,8 +581,11 @@ namespace ConsoleApp26
         private readonly ConsoleColor[] consoleColors = { ConsoleColor.Magenta, ConsoleColor.Blue, ConsoleColor.Cyan, ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.Red, ConsoleColor.White };
         private int indexColor = 0;
         private char[,] simbolMatrix;
+        private GameObgectManager _owner;
+
         public Renderer(GameObgectManager matrix, Coordinates casheScale, GameObject[,] Matrix)
         {
+            _owner = matrix;
             _matrix = Matrix;
             CasheScale = casheScale;
             simbolMatrix = new char[CasheScale.X, CasheScale.Y];
@@ -545,8 +593,7 @@ namespace ConsoleApp26
 
         public void Displaying(int Time, int score, Coordinates scale)
         {
-
-            if(Time % 8 == 0)
+            if (Time % 8 == 0)
             {
                 Console.ForegroundColor = consoleColors[indexColor];
                 if (indexColor + 1 >= consoleColors.Length)
@@ -554,7 +601,7 @@ namespace ConsoleApp26
                 else
                     indexColor++;
             }
-            
+
             for (int i = 0; i < _matrix.GetLength(0); i++)
             {
                 for (int j = 0; j < _matrix.GetLength(1); j++)
@@ -562,7 +609,7 @@ namespace ConsoleApp26
                     simbolMatrix[i, j] = _matrix[i, j]._sprite;
                 }
             }
-            var Window = new StringBuilder(scale.X*scale.Y);
+            var Window = new StringBuilder(scale.X * scale.Y);
             for (int i = 0; i < simbolMatrix.GetLength(0); i++)
             {
                 for (int j = 0; j < simbolMatrix.GetLength(1); j++)
@@ -576,6 +623,11 @@ namespace ConsoleApp26
             Console.WriteLine($"Счёт {score}  ");
         }
 
+        public void Refresh()
+        {
+            if (_owner != null)
+                Displaying(_owner._time, _owner.Score, _owner._Scale);
+        }
     }
 
     abstract class GameObject
@@ -584,6 +636,13 @@ namespace ConsoleApp26
         public GameObject()
         {
             _sprite = ' ';
+        }
+
+        public string Kind => GetType().Name;
+
+        public static GameObject Make(Type kind)
+        {
+            return (GameObject)Activator.CreateInstance(kind);
         }
     }
     class Woall : GameObject
@@ -630,7 +689,7 @@ namespace ConsoleApp26
                     _sprite = '˅';
                     break;
                 case 2:
-                    _sprite = '˂';
+                    _sprite = '˂'; 
                     break;
                 case 3:
                     _sprite = '˃';
@@ -640,7 +699,7 @@ namespace ConsoleApp26
     }
     class Tail : GameObject
     {
-        public Coordinates position = new Coordinates(); 
+        public Coordinates position = new Coordinates();
         public bool IsLastTeil = false;
         public Tail(Coordinates coordinates)
         {
@@ -648,7 +707,7 @@ namespace ConsoleApp26
             position = coordinates;
         }
     }
-    class Apple  : GameObject
+    class Apple : GameObject
     {
         public Apple()
         {
