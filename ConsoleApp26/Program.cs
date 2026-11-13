@@ -16,22 +16,9 @@ namespace ConsoleApp26
         static bool SecondCohort;
         static int InputInt;
 
-        private static Action<int> _speedHandlers;
-        public static event Action<int> SpeedChanged
-        {
-            add { _speedHandlers += value; }
-            remove { _speedHandlers -= value; }
-        }
-
-        public static void Info(params object[] parts)
-        {
-            var sb = new StringBuilder();
-            foreach (var p in parts) sb.Append(p).Append(' ');
-            Console.WriteLine(sb.ToString());
-        }
-
         static void Main(string[] args)
         {
+
             SpeedChanged += s => { };
             var t = new Thread(InputSystem)
             {
@@ -85,6 +72,7 @@ namespace ConsoleApp26
             {
                 Console.Clear();
                 MainCycle();
+
             }
             else if (SettingInput == "2")
             {
@@ -224,6 +212,20 @@ namespace ConsoleApp26
                     }
                 }
             }
+        }
+
+        private static Action<int> _speedHandlers;
+        public static event Action<int> SpeedChanged
+        {
+            add { _speedHandlers += value; }
+            remove { _speedHandlers -= value; }
+        }
+
+        public static void Info(params object[] parts)
+        {
+            var sb = new StringBuilder();
+            foreach (var p in parts) sb.Append(p).Append(' ');
+            Console.WriteLine(sb.ToString());
         }
     }
 
@@ -689,7 +691,7 @@ namespace ConsoleApp26
                     _sprite = '˅';
                     break;
                 case 2:
-                    _sprite = '˂'; 
+                    _sprite = '˂';
                     break;
                 case 3:
                     _sprite = '˃';
